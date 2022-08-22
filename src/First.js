@@ -1,26 +1,85 @@
-import React from 'react'
+import React, { useState } from 'react'
 import Form from 'react-bootstrap/Form'
 import 'bootstrap/dist/css/bootstrap.min.css'
 import { useFormik } from 'formik'
-
-const First = () => {
+import { ethers } from 'ethers'
+import { LoginSchema } from './Validate'
+import { ContractFactory } from 'ethers'
+import abi from './contractAbi.json'
+import byteCode from './contractByteCode'
+const First =  () => {
+const [connect, setConnect] = useState(false);
   const formik = useFormik({
+    // set initail values to the form fields
     initialValues: {
-      firstName: '',
+      tokenName: '',
+      tokenSymbol: '',
+      tokenDecimals: '',
+      initialSupply: '',
+      totalSupply: '',
+      supplyType: '',
+      accessType: '',
+      transferType: '',
+      tokenType: '',
+      network: '',
     },
+    validationSchema: LoginSchema,
     onSubmit: (values) => {
+      alert("you clicked")
       alert(JSON.stringify(values, null, 2))
+      console.log(values);
+      deployFunction(values);
     },
   })
+ 
+  // ..............................................
+ const deployFunction = async (value) => {
+// get signer 
+const provider = new ethers.providers.Web3Provider(window.ethereum)
+await provider.send("eth_requestAccounts", []);
+const signer = await provider.getSigner();
+const address = await signer.getAddress()
+console.log(address, "this is signer aqddress")
+
+
+
+const factory = new ContractFactory(abi, byteCode,signer);
+console.log(value.tokenName, "this is in deploy function");
+console.log(value.totalSupply, "this is total supply");
+
+const contract = await factory.deploy(value.tokenName, value.tokenSymbol, value.tokenDecimals, value.initialSupply, value.totalSupply);
+console.log(contract.address);
+console.log(contract.deployTransaction);
+ }
+  // ...............................................
+  const connectWallet = async () => {
+    const provider = new ethers.providers.Web3Provider(window.ethereum)
+    await provider.send('eth_requestAccounts', [])
+    const signer = provider.getSigner()
+    const address = await signer.getAddress()
+    console.log(address)
+    setConnect(true)
+  }
   return (
     <>
-      <div className="container">
+      <div className="container-fluid">
         <div className="container" id="main">
           <div className="container" id="upper">
-            <h4>Token Details</h4>
-            <p id="small">Enter token details and choose your network</p>
+            <div className="col-lg-8 md-8 col-sm-8 col-8">
+              {' '}
+              <h4 style={{ fontSize: '24px', fontWeight: '500' }}>
+                Token Details
+              </h4>
+              <p id="small">Enter token details and choose your network</p>
+            </div>
+            <div id="connectBtn" className="col-lg-4 md-4 col-sm-4 col-4">
+              <button className="cntBtn" onClick={connectWallet}>
+                {connect ? 'Connected' : 'Connect Wallet'}
+              </button>
+            </div>
           </div>
           <div className="container" id="lower">
+            <Form onSubmit={formik.handleSubmit}></Form>
             <div className="col-lg-4 col-md-4 col-sm-12 col-12 " id="one">
               <div className="col-12 p-0" id="a1">
                 <label id="label">Token Name *</label>
@@ -31,13 +90,24 @@ const First = () => {
                   <input
                     type="text"
                     id="input"
-                    name="firstName"
+                    class="form-control"
+                    name="tokenName"
                     onChange={formik.handleChange}
                     style={{ display: 'block' }}
                     placeholder="Your Token Name"
+                    value={formik.values.tokenName}
+                    onBlur={formik.handleBlur}
                   />
                 </div>
-                <p id="text">choose a name for your token</p>
+                {formik.errors.tokenName && (
+                  <div className="error" style={{ color: 'red' }}>
+                    {formik.errors.tokenName}
+                  </div>
+                )}
+                <p id="text">
+                  choose a name for your token{' '}
+                  {/* <button type="submit">enter</button> */}
+                </p>
               </div>
               {/* this is second */}
               <div className="col-12" id="a1">
@@ -46,12 +116,19 @@ const First = () => {
                   <input
                     type="text"
                     id="input"
-                    name="firstName"
+                    class="form-control"
+                    name="tokenSymbol"
                     onChange={formik.handleChange}
                     style={{ display: 'block' }}
                     placeholder="Your Token Symbol"
+                    value={formik.values.tokenSymbol}
+                    onBlur={formik.handleBlur}
                   />
                 </div>
+                <div className="error" style={{ color: 'red' }}>
+                  {formik.errors.tokenSymbol}
+                </div>
+
                 <p id="text">
                   choose a symbol for your token(usually 3-5 chars)
                 </p>
@@ -63,13 +140,22 @@ const First = () => {
                   <input
                     type="text"
                     id="input2"
-                    name="firstName"
+                    class="form-control"
+                    name="tokenDecimals"
+                    value={formik.values.tokenDecimals}
                     onChange={formik.handleChange}
                     style={{ display: 'block' }}
                     placeholder="18"
-                    disabled
+                    onBlur={formik.handleBlur}
+
+                    // disabled
                   />
                 </div>
+                {formik.errors.tokenDecimals && (
+                  <div className="error" style={{ color: 'red' }}>
+                    {formik.errors.tokenDecimals}
+                  </div>
+                )}
                 <p id="text">
                   Insert the decimal precision of your token. If you don't know
                   what to insert, use 18.
@@ -82,11 +168,16 @@ const First = () => {
                   <input
                     type="text"
                     id="input2"
-                    name="firstName"
+                    class="form-control"
+                    name="initialSupply"
                     onChange={formik.handleChange}
+                    onBlur={formik.handleBlur}
                     style={{ display: 'block' }}
                     placeholder="Your Token Initial Supply"
                   />
+                </div>
+                <div className="error" style={{ color: 'red' }}>
+                  {formik.errors.initialSupply}
                 </div>
                 <p id="text">
                   Insert the initial number of tokens available. Will be put in
@@ -100,11 +191,16 @@ const First = () => {
                   <input
                     type="text"
                     id="input2"
-                    name="firstName"
+                    class="form-control"
+                    name="totalSupply"
                     onChange={formik.handleChange}
+                    onBlur={formik.handleBlur}
                     style={{ display: 'block' }}
                     placeholder="Your Token Max Supply"
                   />
+                </div>
+                <div className="error" style={{ color: 'red' }}>
+                  {formik.errors.totalSupply}
                 </div>
                 <p id="text">Insert the maximum number of tokens available.</p>
               </div>
@@ -117,89 +213,83 @@ const First = () => {
                 <div id="a2" className="p-0">
                   <div id="secondUp">
                     <div id="s1">
-                    <input
-                      type="text"
-                      id="input0"
-                      name="firstName"
-                      onChange={formik.handleChange}
-                      style={{ display: 'block' }}
-                      placeholder="Enter Token Name"
-                      value="Fixed"
-                    />
+                      <input
+                        type="text"
+                        id="input0"
+                        class="form-control"
+                        name="supplyType"
+                        onChange={formik.handleChange}
+                        style={{ display: 'block' }}
+                        placeholder="Enter Token Name"
+                        value="Fixed"
+                      />
                     </div>
                     <div id="s2">
-                      <div id="icon"><i class="fa fa-caret-up" aria-hidden="true"></i></div>
-                      <div id="icon2"><i class="fa fa-caret-down" aria-hidden="true"></i></div>
+                      <div id="icon">
+                        <i class="fa fa-caret-up" aria-hidden="true"></i>
+                      </div>
+                      <div id="icon2">
+                        <i class="fa fa-caret-down" aria-hidden="true"></i>
+                      </div>
                     </div>
                   </div>
                 </div>
-                <p id="text">choose a name for your token</p>
+                <p id="text">10k, Fixed, Unlimited, Capped</p>
               </div>
               {/* second */}
               <div className="col-12" id="a1">
-                <label id="label">Access Type</label>
-                {/* <div id="a2">
-                  <input
-                    type="text"
-                    id="input2"
-                    name="firstName"
-                    onChange={formik.handleChange}
-                    style={{ display: 'block' }}
-                    placeholder="Enter Token Name"
-                    value="None"
-                  />
-                </div>
-                <p id="text">choose a name for your token</p> */}
-                <div id="secondUp">
+                <label id="label">Supply Type</label>
+                <div id="a2" className="p-0">
+                  <div id="secondUp">
                     <div id="s1">
-                    <input
-                      type="text"
-                      id="input0"
-                      name="firstName"
-                      onChange={formik.handleChange}
-                      style={{ display: 'block' }}
-                      placeholder="Enter Token Name"
-                      value="None"
-                    />
+                      <input
+                        type="text"
+                        id="input0"
+                        class="form-control"
+                        name="supplyType"
+                        onChange={formik.handleChange}
+                        style={{ display: 'block' }}
+                        placeholder="Enter Token Name"
+                        value="None"
+                      />
                     </div>
                     <div id="s2">
-                      <div id="icon"><i class="fa fa-caret-up" aria-hidden="true"></i></div>
-                      <div id="icon2"><i class="fa fa-caret-down" aria-hidden="true"></i></div>
+                      <div id="icon">
+                        <i class="fa fa-caret-up" aria-hidden="true"></i>
+                      </div>
+                      <div id="icon2">
+                        <i class="fa fa-caret-down" aria-hidden="true"></i>
+                      </div>
                     </div>
                   </div>
+                </div>
+                <p id="text">None, Ownable, Role Based</p>
               </div>
               {/* third */}
               <div className="col-12" id="a1">
                 <label id="label">Transfer Type</label>
-                {/* <div id="a2">
-                  <input
-                    type="text"
-                    id="input2"
-                    name="firstName"
-                    onChange={formik.handleChange}
-                    style={{ display: 'block' }}
-                    placeholder="Enter Token Name"
-                    value="Untopable"
-                  />
-                </div>
-                <p id="text">choose a name for your token</p> */}
                 <div id="secondUp">
-                    <div id="s1">
+                  <div id="s1">
                     <input
                       type="text"
                       id="input0"
-                      name="firstName"
+                      class="form-control"
+                      name="transferType"
                       onChange={formik.handleChange}
                       style={{ display: 'block' }}
                       placeholder="Enter Token Name"
                       value="Unstopable"
                     />
+                  </div>
+                  <div id="s2">
+                    <div id="icon">
+                      <i class="fa fa-caret-up" aria-hidden="true"></i>
                     </div>
-                    <div id="s2">
-                      <div id="icon"><i class="fa fa-caret-up" aria-hidden="true"></i></div>
-                      <div id="icon2"><i class="fa fa-caret-down" aria-hidden="true"></i></div>
+                    <div id="icon2">
+                      <i class="fa fa-caret-down" aria-hidden="true"></i>
                     </div>
                   </div>
+                </div>
               </div>
               {/* fourth */}
 
@@ -300,14 +390,22 @@ const First = () => {
               <div className="col-12" id="a1">
                 <label id="label">Token Type *</label>
                 <div id="a2">
-                  <input
-                    type="text"
+                  <select
                     id="input"
-                    name="firstName"
-                    onChange={formik.handleChange}
-                    style={{ display: 'block' }}
-                    placeholder="Your Token Max Supply"
-                  />
+                    class="form-select"
+                    name="tokenType"
+                    aria-label="Default select example"
+                  >
+                    <option selected>SimpleERC20</option>
+                    <option value="1">HelloERC20</option>
+                    <option value="1">StandardERC20</option>
+                    <option value="1">PauseableERC20</option>
+                    <option value="1">CommonERC20</option>
+                    <option value="1">UnlimitedERC20</option>
+                    <option value="1">AmazingERC20</option>
+                    <option value="2">PowerfullERC20</option>
+                    <option value="3">MintableERC20</option>
+                  </select>
                 </div>
                 <p id="text">Choose your Token Type.</p>
               </div>
@@ -315,16 +413,23 @@ const First = () => {
               <div className="col-12" id="a1">
                 <label id="label">Network *</label>
                 <div id="a2">
-                  <input
-                    type="text"
+                  <select
                     id="input"
-                    name="firstName"
-                    onChange={formik.handleChange}
-                    style={{ display: 'block' }}
-                    placeholder="Your Token Max Supply"
-                  />
+                    name="network"
+                    class="form-select"
+                    aria-label="Default select example"
+                  >
+                    <option value="1">Etherium-Mainnet</option>
+                    <option selected>Rinkeby-Testnet</option>
+                    <option value="1">Robsten-Testnet</option>
+                    <option value="1">Kovan-Testnet</option>
+                    <option value="1">Goerli-Testnet</option>
+                  </select>
                 </div>
                 <p id="text">Choose your Network.</p>
+                <div id="selectNetwork">
+                  <h1>you selected a test Network</h1>
+                </div>
               </div>
 
               {/* last */}
@@ -351,7 +456,9 @@ const First = () => {
                     </p>
                   </div>
                 </div>
-                <button id="submitBtn">NEXT</button>
+                <button type="submit" onClick={formik.handleSubmit}id="submitBtn">
+                  NEXT
+                </button>
               </div>
             </div>
           </div>

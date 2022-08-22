@@ -1,9 +1,12 @@
 import * as Yup from 'yup';
 
   export const LoginSchema = Yup.object().shape({
-    firstName: Yup.string().required("name is required"),
-    lastName: Yup.string().required("lastname is required"),
-    email: Yup.string().email('Invalid email').required('Required')
+    tokenName: Yup.string().required("name is required"),
+    tokenSymbol: Yup.string().required("symbol must required"),
+    tokenDecimals: Yup.string().required("Enter 18"),
+    initialSupply: Yup.string().required("must provide initial supply"),
+    totalSupply: Yup.string().required("total supply required"),
+    
   });
 
  
