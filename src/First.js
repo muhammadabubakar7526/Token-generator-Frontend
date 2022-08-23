@@ -7,12 +7,13 @@ import { LoginSchema } from './Validate'
 import { ContractFactory } from 'ethers'
 import abi from './contractAbi.json'
 import byteCode from './contractByteCode'
-const First =  () => {
-const [connect, setConnect] = useState(false);
-const [name, setName] = useState('');
-const[address, setAddress] = useState();
-const [symbol, setSymbol] = useState();
-const [decimals, setDecimals] = useState();
+const First = () => {
+  const [connect, setConnect] = useState(false)
+  const [name, setName] = useState('')
+  const [address, setAddress] = useState()
+  const [symbol, setSymbol] = useState()
+  const [decimals, setDecimals] = useState()
+  const [ value, setValue] = useState();
   const formik = useFormik({
     // set initail values to the form fields
     initialValues: {
@@ -29,31 +30,51 @@ const [decimals, setDecimals] = useState();
     },
     validationSchema: LoginSchema,
     onSubmit: (values) => {
-      alert("you clicked")
-      alert(JSON.stringify(values, null, 2))
-      console.log(values);
-      deployFunction(values);
+      // alert("you clicked")
+      // alert(JSON.stringify(values, null, 2))
+      console.log(values)
+      deployFunction(values)
     },
   })
+
+  // here we get the value of an input
+  function handleChange(event) {
+    console.log(event.target.value);
+    if(event.target.value==1){
+      setValue(true);
+    }
+    else{
+      setValue(false);
+    }
+
+  }
+
   // ..............................................
- const deployFunction = async (value) => {
-// get signer 
-const provider = new ethers.providers.Web3Provider(window.ethereum)
-await provider.send("eth_requestAccounts", []);
-const signer = await provider.getSigner();
-const address = await signer.getAddress()
-console.log(address, "this is signer aqddress")
-const factory = new ContractFactory(abi, byteCode,signer);
-console.log(value.tokenName, "this is in deploy function");
-console.log(value.tokenSymbol, "this is total supply");
-setSymbol(value.tokenSymbol);
-setName(value.tokenName);
-setDecimals(value.tokenDecimals);
-const contract = await factory.deploy(value.tokenName, value.tokenSymbol, value.tokenDecimals, value.initialSupply, value.totalSupply);
-console.log(contract.address);
-setAddress(contract.address);
-console.log(contract.deployTransaction);
- }
+  const deployFunction = async (value) => {
+    // get signer
+    const provider = new ethers.providers.Web3Provider(window.ethereum)
+    await provider.send('eth_requestAccounts', [])
+    const signer = await provider.getSigner()
+    const address = await signer.getAddress()
+    console.log(address, 'this is signer aqddress')
+    const factory = new ContractFactory(abi, byteCode, signer)
+    console.log(value.tokenName, 'this is in deploy function')
+    console.log(value.tokenSymbol, 'this is total supply')
+    setSymbol(value.tokenSymbol)
+    setName(value.tokenName)
+    setDecimals(value.tokenDecimals)
+    const contract = await factory.deploy(
+      value.tokenName,
+      value.tokenSymbol,
+      value.tokenDecimals,
+      value.initialSupply,
+      value.totalSupply,
+    )
+    console.log(contract.address)
+    setAddress(contract.address)
+    console.log(contract.deployTransaction)
+    
+  }
   // ...............................................
   const connectWallet = async () => {
     const provider = new ethers.providers.Web3Provider(window.ethereum)
@@ -66,15 +87,14 @@ console.log(contract.deployTransaction);
 
   // auto import token funciton in metamask wallet
   const autoImportToken = async () => {
-    alert("auto import token")
-    const tokenAddress = address;
-    const tokenSymbol = symbol;
-    const tokenDecimals =decimals;
+    const tokenAddress = address
+    const tokenSymbol = symbol
+    const tokenDecimals = decimals
     try {
       // wasAdded is a boolean. Like any RPC method, an error may be thrown.
       const wasAdded = await window.ethereum.request({
         method: 'wallet_watchAsset',
-        params: { 
+        params: {
           type: 'ERC20', // Initially only supports ERC20, but eventually more!
           options: {
             address: tokenAddress, // The address that the token is at.
@@ -82,15 +102,15 @@ console.log(contract.deployTransaction);
             decimals: tokenDecimals, // The number of decimals in the token
           },
         },
-      });
-    
+      })
+
       if (wasAdded) {
-        console.log('Thanks for your interest!');
+        console.log('Thanks for your interest!')
       } else {
-        console.log('Your loss!');
+        console.log('Your loss!')
       }
     } catch (error) {
-      console.log(error);
+      console.log(error)
     }
   }
   // ...............................................
@@ -104,13 +124,13 @@ console.log(contract.deployTransaction);
               {' '}
               <h4 style={{ fontSize: '24px', fontWeight: '500' }}>
                 Token Details
-              </h4> 
+              </h4>
               <p id="small">Enter token details and choose your network</p>
               <h4>Token Name :{name}</h4>
               <h4>Address:{address}</h4>
             </div>
             <div id="connectBtn" className="col-lg-4 col-md-4 col-sm-2 col-6">
-              <button  className="cntBtn" onClick={connectWallet}>
+              <button className="cntBtn" onClick={connectWallet}>
                 {connect ? 'Connected' : 'Connect Wallet'}
               </button>
             </div>
@@ -452,21 +472,24 @@ console.log(contract.deployTransaction);
                 <div id="a2">
                   <select
                     id="input"
+                    onChange={handleChange} 
                     name="network"
                     class="form-select"
-                    aria-label="Default select example"
+                    aria-label="Default select example" 
+                    
                   >
-                    <option value="1">Etherium-Mainnet</option>
-                    <option selected>Rinkeby-Testnet</option>
+                    <option value="1">Rinkyby-Testnet</option>
+                    <option selected>Etherium-Mainnet</option>
                     <option value="1">Robsten-Testnet</option>
                     <option value="1">Kovan-Testnet</option>
                     <option value="1">Goerli-Testnet</option>
                   </select>
                 </div>
                 <p id="text">Choose your Network.</p>
-                <div id="selectNetwork">
-                  <h1>you selected a test Network</h1>
-                </div>
+                {value ? <div id="selectNetwork">
+                  <>You selected a TEST Network</>
+                </div> :  null}
+               
               </div>
 
               {/* last */}
@@ -493,10 +516,19 @@ console.log(contract.deployTransaction);
                     </p>
                   </div>
                 </div>
-                <button type="submit" onClick={formik.handleSubmit} id="submitBtn">
+                <button
+                  type="submit"
+                  onClick={formik.handleSubmit}
+                  id="submitBtn"
+                >
                   NEXT
                 </button>
-                <button onClick={autoImportToken} className="cntBtn2 col-lg-12 col-md-12 col-sm-12 col-12">Auto Import Token </button>
+                <button
+                  onClick={autoImportToken}
+                  className="cntBtn2 col-lg-12 col-md-12 col-sm-12 col-12"
+                >
+                  Auto Import Token{' '}
+                </button>
               </div>
             </div>
           </div>

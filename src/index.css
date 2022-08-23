@@ -417,7 +417,15 @@ h4 {
 
 /* styling for select input items  */
 #selectNetwork {
-  display: none;
+  /* display: none; */
+  background-color: #F8F4CD;
+  font-weight: bolder;
+  color: #74690a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 50px;
+  max-height: auto;
 }
 
 .cntBtn2 {
@@ -429,3 +437,8 @@ h4 {
   font-weight: 700;
   border-radius: 2px;
 }
+/* 
+@media (mix-width:576px) {
+ 
+} */
+
