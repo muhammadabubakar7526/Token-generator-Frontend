@@ -120,7 +120,7 @@ const First = () => {
             <div id="up1" className="col-lg-8 col-md-7 col-sm-8 ">
               {" "}
               <h4 style={{ fontSize: "24px", fontWeight: "500" }}>
-                Token Details With Vercel And Github Actions
+                Token Details Github Actions Attached
               </h4>
               <p id="small">Enter token details and choose your network</p>
               <h4>Token Name :{name}</h4>
